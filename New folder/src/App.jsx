@@ -5,7 +5,7 @@ import VideoPlayer from './components/VideoPlayer.jsx'
 import Controls from './components/Controls.jsx'
 import ChatBox from './components/ChatBox.jsx'
 
-// Connect to your Node server (default: http://localhost:3000)
+// Connect to your Node server
 const socket = io('http://localhost:2000', { transports: ['websocket'] })
 
 export default function App() {
@@ -57,11 +57,17 @@ export default function App() {
   }
 
   const callUser = useCallback(async (targetId) => {
-    if (!localStream) return
+    // Ensure local media exists before offering
+    let stream = localStream
+    if (!stream) {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      setLocalStream(stream)
+    }
+
     const pc = createPeerConnection()
     peerRef.current = pc
 
-    localStream.getTracks().forEach((t) => pc.addTrack(t, localStream))
+    stream.getTracks().forEach((t) => pc.addTrack(t, stream))
 
     const offer = await pc.createOffer()
     await pc.setLocalDescription(offer)
@@ -84,15 +90,22 @@ export default function App() {
     })
 
     socket.on('offer', async (incoming) => {
+      // Ensure local media exists before answering
+      let stream = localStream
+      if (!stream) {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        setLocalStream(stream)
+      }
+
       const pc = createPeerConnection()
       peerRef.current = pc
 
+      stream.getTracks().forEach((t) => pc.addTrack(t, stream))
+
       await pc.setRemoteDescription(new RTCSessionDescription(incoming.sdp))
-      if (localStream) {
-        localStream.getTracks().forEach((t) => pc.addTrack(t, localStream))
-      }
       const answer = await pc.createAnswer()
       await pc.setLocalDescription(answer)
+
       socket.emit('answer', { target: incoming.caller, sdp: pc.localDescription })
     })
 

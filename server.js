@@ -48,6 +48,6 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => {
+server.listen(2000, () => {
   console.log('Server running at http://localhost:2000');
 });
