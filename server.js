@@ -1,14 +1,31 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const path = require('path');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = socketIO(server, {
+  cors: {
+    origin: 'http://localhost:5173', // React app URL
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
 
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Use Auth Routes
+app.use('/api/auth', authRoutes);
+
+// WebRTC logic here (same as before)...
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
@@ -32,8 +49,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chat-message', ({ room, message, sender }) => {
-  socket.to(room).emit('chat-message', { message, sender });
-});
+    socket.to(room).emit('chat-message', { message, sender });
+  });
 
   socket.on('offer', (payload) => {
     io.to(payload.target).emit('offer', payload);
