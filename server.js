@@ -84,6 +84,7 @@ const io = socketIO(server, {
   cors: {
     origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
     methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
   }
 });
