@@ -82,7 +82,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+    origin: process.env.CLIENT_ORIGIN ,
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
@@ -90,7 +90,7 @@ const io = socketIO(server, {
 });
 
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  origin: process.env.CLIENT_ORIGIN,
   credentials: true
 }));
 
