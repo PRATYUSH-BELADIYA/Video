@@ -82,13 +82,21 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
     methods: ['GET', 'POST'],
     credentials: true
   }
 });
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  credentials: true
+}));
+
+app.get('/', (_req, res) => {
+  res.send('OK');
+});
+
 app.use(bodyParser.json());
 
 // Auth routes
@@ -178,6 +186,9 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(2000, () => {
-  console.log('Server running at http://localhost:2000');
+// at bottom of server.js
+const PORT = process.env.PORT || 2000;
+server.listen(PORT, () => {
+  console.log(`Server running on port http://localhost:${PORT}`);
 });
+
